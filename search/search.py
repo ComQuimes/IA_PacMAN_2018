@@ -91,29 +91,109 @@ def depthFirstSearch(problem):
     """
     "*** YOUR CODE HERE ***"
     
+    "______________________________________________________________________"
+    "______________________________________________________________________"
+    
+    # -- Cojemos el primer nodo del problema, creamos la pila
+    # frontera y la lista cerrados.
+    start = problem.getStartState()
     frontera = util.Stack()
     cerrados = []
-    
-    frontera.push(problem.getStartState())
-    
+
+    # -- Guardamos el elemento start, una lista vacia (acciones)
+    # y un coste inicial de 1 en la pila frontera.
+    frontera.push((start, [], 1))
+
+    # -- Este bucle while se ejecutara siempre que existan elementos
+    # en la pila frontera. 
     while not frontera.isEmpty():
-        tmp = frontera.pop()
+        # -- Sacamos el ultimo elemento añadido en la pila frontera,
+        # guardamos las acciones de este elemento y añadimos este
+        # elemento a la lista cerrados.
+        n = frontera.pop()
+        acciones = n[1]
+        cerrados.append(n[0])
         
-        if problem.isGoalState(tmp):
-            return cerrados
-        elif not tmp in cerrados:
-            #a = problem.getSuccessors(problem.getStartState())
-            #print(a[0][1])
-            cerrados.append(tmp)
-            for i in problem.getSuccessors(tmp):  
-                frontera.push(i[0])
+        # -- Si el elemento actual es la meta devolvemos la lista acciones.
+        if problem.isGoalState(n[0]):
+            return acciones
+        
+        # -- Este bucle recorre todos los sucesores del elemento actual.
+        for sucesor in problem.getSuccessors(n[0]):
+            
+            # -- Solo miramos los sucesores que no estan en cerrados.
+            if not sucesor[0] in cerrados:
                 
-    return cerrados
+                # -- Guardamos las acciones del elemento actual, del sucesor
+                # actual y añadimos el sucesor actual en la pila frontera.
+                sucesorAcciones = list(n[1])
+                sucesorAcciones.append(sucesor[1])
+                frontera.push((sucesor[0], sucesorAcciones, sucesor[2]))
+    
+    # -- Devolvemos acciones en caso de que termine el while.
+    # (no se ha encontrado la meta)
+    return acciones
+
+    "----------------------------------------------------------------------"
+    "----------------------------------------------------------------------"
     
 def breadthFirstSearch(problem):
     """Search the shallowest nodes in the search tree first."""
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    
+    "______________________________________________________________________"
+    "______________________________________________________________________"
+    
+    # -- Cojemos el primer nodo del problema, creamos la cola
+    # frontera y la lista cerrados y exitosos.
+    start = problem.getStartState()
+    frontera = util.Queue()
+    cerrados = []
+    exitosos = []
+
+    # -- Guardamos el elemento start, una lista vacia (acciones)
+    # y un coste inicial de 1 en la cola frontera.
+    frontera.push((start, [], 1))
+
+    # -- Este bucle while se ejecutara siempre que existan elementos
+    # en la cola frontera. 
+    while not frontera.isEmpty():
+        
+        # -- Sacamos el ultimo elemento añadido en la cola frontera,
+        # guardamos las acciones de este elemento y añadimos el nodo
+        # del elemento actual a la lista cerrados.
+        n = frontera.pop()
+        acciones = n[1]
+        cerrados.append(n[0])
+
+        # -- Si el elemento actual es la meta devolvemos la lista acciones.
+        if problem.isGoalState(n[0]):
+            return acciones
+
+        # -- Este bucle recorre todos los sucesores del elemento actual.
+        for sucesor in problem.getSuccessors(n[0]):
+            
+            # -- Solo miramos los sucesores que no estan en cerrados.
+            if not sucesor[0] in cerrados:
+                
+                # -- Solo miramos los sucesores que no estan en exitosos.
+                if not sucesor[0] in exitosos:
+                    
+                    # -- Guardamos el nodo del sucesor actual en exitosos,
+                    # las acciones del elemento actual y las del sucesor
+                    # actual y añadimos el sucesor actual en la cola
+                    # frontera con sus acciones i peso.
+                    exitosos.append(sucesor[0])
+                    sucesorAcciones = list(n[1])
+                    sucesorAcciones.append(sucesor[1])
+                    frontera.push((sucesor[0], sucesorAcciones, sucesor[2]))
+    
+    # -- Devolvemos acciones en caso de que termine el while.
+    # (no se ha encontrado la meta)
+    return acciones
+
+    "----------------------------------------------------------------------"
+    "----------------------------------------------------------------------"
 
 def uniformCostSearch(problem):
     """Search the node of least total cost first."""
@@ -130,7 +210,70 @@ def nullHeuristic(state, problem=None):
 def aStarSearch(problem, heuristic=nullHeuristic):
     """Search the node that has the lowest combined cost and heuristic first."""
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    
+    "______________________________________________________________________"
+    "______________________________________________________________________"
+    
+    # -- Cojemos el primer nodo del problema, creamos la cola
+    # frontera y la lista cerrados y exitosos.
+    start = problem.getStartState()
+    frontera = util.PriorityQueue()
+    cerrados = []
+    exitosos = []
+    
+    # -- Guardamos el elemento start, una lista vacia (acciones),
+    # un coste inicial de 1 en la cola frontera y la heuristica 
+    # del elemento inicial.
+    frontera.push((start, [], 0), heuristic(start, problem))
+
+    # -- Este bucle while se ejecutara siempre que existan elementos
+    # en la cola frontera.
+    while not frontera.isEmpty():
+        
+        # -- Sacamos el ultimo elemento añadido en la cola frontera,
+        # guardamos las acciones de este elemento y añadimos el nodo
+        # del elemento actual a la lista cerrados.
+        n = frontera.pop()
+        accions = n[1]
+        cerrados.append(n[0])
+
+        # -- Si el elemento actual es la meta devolvemos la lista acciones.
+        if problem.isGoalState(n[0]):
+            return accions
+
+        # -- Este bucle recorre todos los sucesores del elemento actual.
+        for successor in problem.getSuccessors(n[0]):
+            
+            # -- Solo miramos los sucesores que no estan en cerrados.
+            if not successor[0] in cerrados:
+                
+                # -- Solo miramos los sucesores que no estan en exitosos
+                # o los que sean la meta.
+                if (not successor[0] in exitosos) or (problem.isGoalState(successor[0])):
+                    
+                    # -- Guardamos el nodo del sucesor actual en exitosos,
+                    # las acciones del elemento actual y las del sucesor
+                    # actual y calculamos la nueva heuristica formada por
+                    # el elemento actual, el coste del sucesor actual y
+                    # la heuristica del sucesor actual por ultimo añadimos
+                    # el sucesor actual en la cola frontera con sus acciones y peso.
+                    exitosos.append(successor[0])
+                    sucesorAcciones = list(n[1])
+                    sucesorAcciones.append(successor[1])
+                    costeSucesor = n[2] + successor[2]
+                    heuristicaSuccessor = heuristic(successor[0], problem)
+                    frontera.push((successor[0], sucesorAcciones, costeSucesor), costeSucesor + heuristicaSuccessor)
+    
+        # -- Si el elemento actual es la meta devolvemos la lista acciones.
+        if problem.isGoalState(n[0]):
+            return accions
+        
+    # -- Devolvemos acciones en caso de que termine el while.
+    # (no se ha encontrado la meta)
+    return accions
+
+    "----------------------------------------------------------------------"
+    "----------------------------------------------------------------------"
 
 
 # Abbreviations

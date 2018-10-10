@@ -291,6 +291,14 @@ class CornersProblem(search.SearchProblem):
         # Please add any code here which you would like to use
         # in initializing the problem
         "*** YOUR CODE HERE ***"
+        "______________________________________________________________________"
+        "______________________________________________________________________"
+        
+        # -- Creamos una tupla con los valores de las esquinas.
+        self.tuplaEsquina = (self.c0, self.c1, self.c2, self.c3) = (False, False, False, False)
+        
+        "----------------------------------------------------------------------"
+        "----------------------------------------------------------------------"
 
     def getStartState(self):
         """
@@ -298,14 +306,30 @@ class CornersProblem(search.SearchProblem):
         space)
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        
+        "______________________________________________________________________"
+        "______________________________________________________________________"
+        
+        # -- Devolvemos la posicion inicial i la tupla de esquinas.
+        return (self.startingPosition, self.tuplaEsquina)
+
+        "----------------------------------------------------------------------"
+        "----------------------------------------------------------------------"
 
     def isGoalState(self, state):
         """
         Returns whether this search state is a goal state of the problem.
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        
+        "______________________________________________________________________"
+        "______________________________________________________________________"
+    
+        # -- Devolvemos True si ya se han visitado todas las esquina. 
+        return state[1] == (True, True, True, True)
+    
+        "----------------------------------------------------------------------"
+        "----------------------------------------------------------------------"
 
     def getSuccessors(self, state):
         """
@@ -328,9 +352,46 @@ class CornersProblem(search.SearchProblem):
             #   hitsWall = self.walls[nextx][nexty]
 
             "*** YOUR CODE HERE ***"
+            
+            "______________________________________________________________________"
+            "______________________________________________________________________"
+            
+            # -- Guardamos la posicion actual del elemento y el estado de sus esquinas.
+            currentPosition = state[0]
+            self.c0 = state[1][0]
+            self.c1 = state[1][1]
+            self.c2 = state[1][2]
+            self.c3 = state[1][3]
+
+            # -- Guardamos la tupla de la posicion actual en las variables x e y, 
+            # las posibles direcciones dependiendo de la accion actual y calculamos 
+            # sus nueva posible posicion 
+            x,y = currentPosition
+            dx, dy = Actions.directionToVector(action)
+            nextx, nexty = int(x + dx), int(y + dy)
+            
+            # -- Solo guardamos las nuevas posiciones que no son muros.
+            if not self.walls[nextx][nexty]:
+                
+                # -- Creamos la tupla de esquinas si la nueva posicion es una esquina.
+                if ((nextx, nexty) == self.corners[0]):
+                    self.c0 = True
+                if ((nextx, nexty) == self.corners[1]):
+                    self.c1 = True
+                if ((nextx, nexty) == self.corners[2]):
+                    self.c2 = True
+                if ((nextx, nexty) == self.corners[3]):
+                    self.c3 = True
+                
+                # -- Añadimo el nuevo sucesor a la lista con sus nueva posicion,
+                # tupla de esquina, la acción y el coste.
+                successors.append((((nextx, nexty), (self.c0, self.c1, self.c2, self.c3)), action, 1))
 
         self._expanded += 1 # DO NOT CHANGE
         return successors
+    
+        "--------------------------------------------------------------------------"
+        "--------------------------------------------------------------------------"
 
     def getCostOfActions(self, actions):
         """
@@ -363,7 +424,52 @@ def cornersHeuristic(state, problem):
     walls = problem.walls # These are the walls of the maze, as a Grid (game.py)
 
     "*** YOUR CODE HERE ***"
-    return 0 # Default to trivial solution
+    
+    "______________________________________________________________________"
+    "______________________________________________________________________"
+    
+    # -- Creamos una lista de elementos no visitados y la llenemos 
+    # con las esquinas que faltan por visitar.
+    noVisitados = []
+    for i, corner in enumerate(corners):
+        if state[1][i] == False:
+            noVisitados.append(corner)
+
+    # -- Guardamos la posicion del elemento e inicializamos la
+    # variable heuristica.
+    posicion = state[0]
+    heuristica = 0
+
+    # -- Este bucle while se ejecutara siempre que existan elementos
+    # en la lista noVisitados. 
+    while len(noVisitados) != 0:
+        
+        indice = mdist = -1
+        
+        # -- Miramos todos los corners que faltan.
+        for i in range(len(noVisitados)):
+            
+            # -- Calculamos la distancia hasta el corner actual.
+            dist = abs(posicion[0] - noVisitados[i][0]) + abs(posicion[1] - noVisitados[i][1])
+            
+            # -- Si la distancia media es menor a la distancia calculada 
+            # actualizamos la media distancia y guardamos el indice.
+            if mdist == -1 or dist < mdist:
+                mdist = dist
+                indice = i
+                
+        # -- Actualizamos la heuristica con la mejor media distancia, actualizamos 
+        # la posicion por el corner en el que estamos y eliminamos el corner 
+        # de la lista noVisitados.
+        heuristica += mdist
+        posicion = noVisitados[indice]
+        noVisitados.remove(posicion)
+    
+    # -- Devolvemos la heuristica resultante.
+    return heuristica
+    
+    "----------------------------------------------------------------------"
+    "----------------------------------------------------------------------"
 
 class AStarCornersAgent(SearchAgent):
     "A SearchAgent for FoodSearchProblem using A* and your foodHeuristic"
@@ -457,7 +563,57 @@ def foodHeuristic(state, problem):
     """
     position, foodGrid = state
     "*** YOUR CODE HERE ***"
-    return 0
+    
+    "______________________________________________________________________"
+    "______________________________________________________________________"
+    
+    # -- Guardamos los alimentos no ingeridos, creamos la tupla de 
+    # media distancia e inicializamos las variables n1-2 (posiciones 
+    # de dos alimentos) y la heuristica
+    uneaten = foodGrid.asList()
+    mdist = ((0,0),(0,0),0)
+    heuristica = n1 = n2 = 0
+
+    # -- Si no quedan alimentos devolvemos 0 como heuristica.
+    if (len(uneaten) == 0):
+            return 0
+
+    # -- Con estos dos bucles se busca la distancia maxima entre dos 
+    # alimentos.
+    for i in uneaten:
+        for j in uneaten:
+            if not (i == j):
+                
+                # -- Calculamos la distancia entre los alimentos.
+                dist = abs(i[0] - j[0]) + abs(i[1] - j[1])
+                
+                # -- Si la media distancia es menor a la distancia calculada guardamos
+                # la nueva posicion y distancia y calculamos las nuevas posiciones.
+                if(mdist[2] < dist):
+                    mdist = (i,j,dist)
+                    n1 = abs(i[0] - position[0]) + abs(i[1] - position[1])
+                    n2 = abs(j[0] - position[0]) + abs(j[1] - position[1])
+    
+    # -- Solo nos interesa la posicion mas pequeña.
+    if n1 > n2:
+        start = n2
+    else:
+        start = n1
+
+    # -- Dependiendo del numero de alimentos en la lista de los alimentos restantes
+    # la heuristica se calcula teniendo en cuenta el siguiente alimento solo cuando
+    # hay mas de un alimento en la lista.
+    if( (mdist[0], mdist[1]) == ((0,0), (0,0)) ):
+        heuristica = abs(position[0] - uneaten[0][0]) + abs(position[1] - uneaten[0][1])
+    else:
+        heuristica = mdist[2] + start
+        
+    # -- Devolvemos la heuristica calculada, el valor de la heuristica es la maxima 
+    # distancia entre el nodo de inicio y el nodo final (nodo donde esta el elemento).
+    return heuristica
+
+    "----------------------------------------------------------------------"
+    "----------------------------------------------------------------------"
 
 class ClosestDotSearchAgent(SearchAgent):
     "Search for all food using a sequence of searches"
