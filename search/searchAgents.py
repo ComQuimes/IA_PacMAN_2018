@@ -295,7 +295,7 @@ class CornersProblem(search.SearchProblem):
         "______________________________________________________________________"
         
         # -- Creamos una tupla con los valores de las esquinas.
-        self.tuplaEsquina = (self.c0, self.c1, self.c2, self.c3) = (False, False, False, False)
+        self.tuplaEsquina = (self.esquina0, self.esquina1, self.esquina2, self.esquina3) = (False, False, False, False)
         
         "----------------------------------------------------------------------"
         "----------------------------------------------------------------------"
@@ -357,35 +357,35 @@ class CornersProblem(search.SearchProblem):
             "______________________________________________________________________"
             
             # -- Guardamos la posicion actual del elemento y el estado de sus esquinas.
-            currentPosition = state[0]
-            self.c0 = state[1][0]
-            self.c1 = state[1][1]
-            self.c2 = state[1][2]
-            self.c3 = state[1][3]
+            posicionActual = state[0]
+            self.esquina0 = state[1][0]
+            self.esquina1 = state[1][1]
+            self.esquina2 = state[1][2]
+            self.esquina3 = state[1][3]
 
             # -- Guardamos la tupla de la posicion actual en las variables x e y, 
             # las posibles direcciones dependiendo de la accion actual y calculamos 
             # sus nueva posible posicion 
-            x,y = currentPosition
-            dx, dy = Actions.directionToVector(action)
-            nextx, nexty = int(x + dx), int(y + dy)
+            x, y = posicionActual
+            direccionX, direccionY = Actions.directionToVector(action)
+            siguienteX, siguienteY = int(x + direccionX), int(y + direccionY)
             
             # -- Solo guardamos las nuevas posiciones que no son muros.
-            if not self.walls[nextx][nexty]:
+            if not self.walls[siguienteX][siguienteY]:
                 
                 # -- Creamos la tupla de esquinas si la nueva posicion es una esquina.
-                if ((nextx, nexty) == self.corners[0]):
-                    self.c0 = True
-                if ((nextx, nexty) == self.corners[1]):
-                    self.c1 = True
-                if ((nextx, nexty) == self.corners[2]):
-                    self.c2 = True
-                if ((nextx, nexty) == self.corners[3]):
-                    self.c3 = True
+                if ((siguienteX, siguienteY) == self.corners[0]):
+                    self.esquina0 = True
+                if ((siguienteX, siguienteY) == self.corners[1]):
+                    self.esquina1 = True
+                if ((siguienteX, siguienteY) == self.corners[2]):
+                    self.esquina2 = True
+                if ((siguienteX, siguienteY) == self.corners[3]):
+                    self.esquina3 = True
                 
                 # -- Añadimo el nuevo sucesor a la lista con sus nueva posicion,
                 # tupla de esquina, la acción y el coste.
-                successors.append((((nextx, nexty), (self.c0, self.c1, self.c2, self.c3)), action, 1))
+                successors.append((((siguienteX, siguienteY), (self.c0, self.c1, self.c2, self.c3)), action, 1))
 
         self._expanded += 1 # DO NOT CHANGE
         return successors
@@ -444,24 +444,24 @@ def cornersHeuristic(state, problem):
     # en la lista noVisitados. 
     while len(noVisitados) != 0:
         
-        indice = mdist = -1
+        indice = distanciaMedia = -1
         
         # -- Miramos todos los corners que faltan.
         for i in range(len(noVisitados)):
             
             # -- Calculamos la distancia hasta el corner actual.
-            dist = abs(posicion[0] - noVisitados[i][0]) + abs(posicion[1] - noVisitados[i][1])
+            distancia = abs(posicion[0] - noVisitados[i][0]) + abs(posicion[1] - noVisitados[i][1])
             
             # -- Si la distancia media es menor a la distancia calculada 
             # actualizamos la media distancia y guardamos el indice.
-            if mdist == -1 or dist < mdist:
-                mdist = dist
+            if distanciaMedia == -1 or distancia < distanciaMedia:
+                distanciaMedia = distancia
                 indice = i
                 
         # -- Actualizamos la heuristica con la mejor media distancia, actualizamos 
         # la posicion por el corner en el que estamos y eliminamos el corner 
         # de la lista noVisitados.
-        heuristica += mdist
+        heuristica += distanciaMedia
         posicion = noVisitados[indice]
         noVisitados.remove(posicion)
     
@@ -570,43 +570,43 @@ def foodHeuristic(state, problem):
     # -- Guardamos los alimentos no ingeridos, creamos la tupla de 
     # media distancia e inicializamos las variables n1-2 (posiciones 
     # de dos alimentos) y la heuristica
-    uneaten = foodGrid.asList()
-    mdist = ((0,0),(0,0),0)
-    heuristica = n1 = n2 = 0
+    sinComer = foodGrid.asList()
+    distanciaMedia = ((0,0),(0,0),0)
+    heuristica = alimento1 = alimento2 = 0
 
     # -- Si no quedan alimentos devolvemos 0 como heuristica.
-    if (len(uneaten) == 0):
+    if (len(sinComer) == 0):
             return 0
 
     # -- Con estos dos bucles se busca la distancia maxima entre dos 
     # alimentos.
-    for i in uneaten:
-        for j in uneaten:
+    for i in sinComer:
+        for j in sinComer:
             if not (i == j):
                 
                 # -- Calculamos la distancia entre los alimentos.
-                dist = abs(i[0] - j[0]) + abs(i[1] - j[1])
+                distancia = abs(i[0] - j[0]) + abs(i[1] - j[1])
                 
                 # -- Si la media distancia es menor a la distancia calculada guardamos
                 # la nueva posicion y distancia y calculamos las nuevas posiciones.
-                if(mdist[2] < dist):
-                    mdist = (i,j,dist)
-                    n1 = abs(i[0] - position[0]) + abs(i[1] - position[1])
-                    n2 = abs(j[0] - position[0]) + abs(j[1] - position[1])
+                if(distanciaMedia[2] < distancia):
+                    distanciaMedia = (i,j,distancia)
+                    elemento1 = abs(i[0] - position[0]) + abs(i[1] - position[1])
+                    alimento2 = abs(j[0] - position[0]) + abs(j[1] - position[1])
     
     # -- Solo nos interesa la posicion mas pequeña.
-    if n1 > n2:
-        start = n2
+    if alimento1 > alimento2:
+        inicio = alimento2
     else:
-        start = n1
+        inicio = alimento1
 
     # -- Dependiendo del numero de alimentos en la lista de los alimentos restantes
     # la heuristica se calcula teniendo en cuenta el siguiente alimento solo cuando
     # hay mas de un alimento en la lista.
-    if( (mdist[0], mdist[1]) == ((0,0), (0,0)) ):
-        heuristica = abs(position[0] - uneaten[0][0]) + abs(position[1] - uneaten[0][1])
+    if( (distanciaMedia[0], distanciaMedia[1]) == ((0,0), (0,0)) ):
+        heuristica = abs(position[0] - sinComer[0][0]) + abs(position[1] - sinComer[0][1])
     else:
-        heuristica = mdist[2] + start
+        heuristica = distanciaMedia[2] + inicio
         
     # -- Devolvemos la heuristica calculada, el valor de la heuristica es la maxima 
     # distancia entre el nodo de inicio y el nodo final (nodo donde esta el elemento).

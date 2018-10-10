@@ -96,13 +96,13 @@ def depthFirstSearch(problem):
     
     # -- Cojemos el primer nodo del problema, creamos la pila
     # frontera y la lista cerrados.
-    start = problem.getStartState()
+    inicio = problem.getStartState()
     frontera = util.Stack()
     cerrados = []
 
-    # -- Guardamos el elemento start, una lista vacia (acciones)
+    # -- Guardamos el elemento inicio, una lista vacia (acciones)
     # y un coste inicial de 1 en la pila frontera.
-    frontera.push((start, [], 1))
+    frontera.push((inicio, [], 1))
 
     # -- Este bucle while se ejecutara siempre que existan elementos
     # en la pila frontera. 
@@ -146,14 +146,14 @@ def breadthFirstSearch(problem):
     
     # -- Cojemos el primer nodo del problema, creamos la cola
     # frontera y la lista cerrados y exitosos.
-    start = problem.getStartState()
+    inicio = problem.getStartState()
     frontera = util.Queue()
     cerrados = []
     exitosos = []
 
-    # -- Guardamos el elemento start, una lista vacia (acciones)
+    # -- Guardamos el elemento inicio, una lista vacia (acciones)
     # y un coste inicial de 1 en la cola frontera.
-    frontera.push((start, [], 1))
+    frontera.push((inicio, [], 1))
 
     # -- Este bucle while se ejecutara siempre que existan elementos
     # en la cola frontera. 
@@ -216,15 +216,15 @@ def aStarSearch(problem, heuristic=nullHeuristic):
     
     # -- Cojemos el primer nodo del problema, creamos la cola
     # frontera y la lista cerrados y exitosos.
-    start = problem.getStartState()
+    inicio = problem.getStartState()
     frontera = util.PriorityQueue()
     cerrados = []
     exitosos = []
     
-    # -- Guardamos el elemento start, una lista vacia (acciones),
+    # -- Guardamos el elemento inicio, una lista vacia (acciones),
     # un coste inicial de 1 en la cola frontera y la heuristica 
     # del elemento inicial.
-    frontera.push((start, [], 0), heuristic(start, problem))
+    frontera.push((inicio, [], 0), heuristic(inicio, problem))
 
     # -- Este bucle while se ejecutara siempre que existan elementos
     # en la cola frontera.
